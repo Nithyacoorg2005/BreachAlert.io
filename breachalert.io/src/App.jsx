@@ -3,6 +3,7 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "../src/pages/DashBoard"
 import MainPage from "./pages/MainPage";
 import Profile from "./Components/Profile";
+import './App.css'
 
 export default function App() {
   return (
