@@ -12,6 +12,7 @@ import {
   Github,
 } from "lucide-react";
 
+// Card Component
 const Card = ({ icon, title, description, delay }) => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px 0px" });
@@ -36,99 +37,82 @@ const Card = ({ icon, title, description, delay }) => {
   );
 };
 
+// Auth Section
 const AuthSection = () => {
   const [isSignup, setIsSignup] = useState(true);
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [authComplete, setAuthComplete] = useState(false);
   const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        alert(data.msg);
-        localStorage.setItem("user", JSON.stringify({ username, email }));
-        navigate("/main");
-      } else {
-        alert(data.msg);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong!");
-    }
-  };
+const handleSignup = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, email, password }),
+    });
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+    // Try parsing response body
+    let data;
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("token", data.token);
-        navigate("/main");
-      } else {
-        alert(data.msg);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong!");
+      data = await res.json();
+    } catch (err) {
+      console.error("❌ Could not parse JSON:", err);
+      throw new Error("Invalid JSON response from server");
     }
-  };
+
+    if (res.ok) {
+      alert(data.msg);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/main");
+    } else {
+      // ✅ Show backend error message instead of generic
+      alert(data.msg || "Signup failed");
+    }
+  } catch (err) {
+    console.error("🔥 Signup error:", err);
+    alert(err.message || "Something went wrong. Check your server!");
+  }
+};
+
+
+
 
   return (
-    <div className="flex flex-col items-center justify-center ...">
-      <h2 className="...">{isSignup ? "Sign Up" : "Login"}</h2>
-      <p className="...">
-        {isSignup
-          ? "Join us and protect your digital identity."
-          : "Welcome back to your digital fortress."}
-      </p>
+    <div className="w-full max-w-md mx-auto bg-yellow-400 rounded-2xl shadow-lg p-8 space-y-6">
+  <h2 className="text-3xl font-extrabold text-blue-900 text-center">{isSignup ? "Sign Up" : "Login"}</h2>
+  <p className="text-center text-gray-700">{isSignup ? "Join us and protect your digital identity." : "Welcome back to your digital fortress."}</p>
 
-      <form onSubmit={isSignup ? handleSignup : handleLogin} className="w-full space-y-4">
-        {isSignup && (
-          <>
-            <input type="text" placeholder="Username" />
-            <input type="email" placeholder="Email"  />
-          </>
-        )}
-        {!isSignup && (
-          <input type="email" placeholder="Email"  />
-        )}
-        <div className="relative">
-          <input type={showPassword ? "text" : "password"} placeholder="Password" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-4">
-            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-          </button>
-        </div>
-        <button type="submit" className="...">
-          {isSignup ? "Sign Up" : "Login"}
-        </button>
-      </form>
-
-      <button
-        onClick={() => setIsSignup(!isSignup)}
-        className="mt-6 text-sm text-gray-400 hover:underline"
-      >
-        {isSignup ? "Already have an account? Login" : "New user? Sign Up"}
-      </button>
+  <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4 text-black">
+    {isSignup && (
+      <>
+        <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" required className="..." />
+        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required className="..." />
+      </>
+    )}
+    {!isSignup && (
+      <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required className="..." />
+    )}
+    <div className="relative">
+      <input type={showPassword ? "text" : "password"} placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} autoComplete={isSignup ? "new-password" : "current-password"} required className="..." />
+      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-3">{showPassword ? <EyeOff size={20}/> : <Eye size={20}/>}</button>
     </div>
+
+    <button type="submit" className="w-full bg-blue-900 hover:bg-blue-800 text-white py-3 rounded-lg font-semibold"> {isSignup ? "Sign Up" : "Login"} </button>
+  </form>
+
+  <button onClick={() => setIsSignup(!isSignup)} className="w-full text-center mt-4 text-gray-700 hover:underline">
+    {isSignup ? "Already have an account? Login" : "New user? Sign Up"}
+  </button>
+</div>
+
   );
 };
 
+// Landing Page
 const LandingPage = () => {
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true, margin: "-100px 0px" });
@@ -155,15 +139,15 @@ const LandingPage = () => {
   };
 
   return (
-    <div style={{fontFamily:"Outfit"}} className="relative min-h-screen bg-[#0f2257] text-white  overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#0f2257] text-white overflow-x-hidden font-outfit">
       {/* Background */}
       <div className="fixed inset-0 bg-[#0f2257] -z-10" />
       <div className="fixed inset-0 bg-blue-900 opacity-30 animate-pulse-slow -z-10"></div>
 
       {/* Hero Section */}
       <section ref={heroRef} className="h-screen flex flex-col items-center justify-center text-center px-8 relative z-10">
-        <motion.h1 style={{fontFamily:"Outfit"}}
-          className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#ffcc00] to-yellow-300 mb-4 max-w-4xl"
+        <motion.h1
+          className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-300 mb-4 max-w-4xl"
           initial="hidden"
           animate={heroInView ? "visible" : "hidden"}
           variants={headingVariants}
@@ -185,24 +169,16 @@ const LandingPage = () => {
           variants={containerVariants}
         >
           <motion.button
-            className="px-8 py-4 rounded-full font-bold text-lg bg-[#ffcc00] text-black shadow-lg hover:scale-105 transition-transform"
+            className="px-8 py-4 rounded-full font-bold text-lg bg-yellow-400 text-black shadow-lg hover:scale-105 transition-transform"
             variants={listVariants}
-            onClick={() =>
-              document
-                .getElementById("auth-section")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
+            onClick={() => document.getElementById("auth-section")?.scrollIntoView({ behavior: "smooth" })}
           >
             Create Account
           </motion.button>
           <motion.button
             className="px-8 py-4 rounded-full font-bold text-lg bg-white/10 text-white border border-white/20 hover:bg-white/20 transition-colors hover:scale-105"
             variants={listVariants}
-            onClick={() =>
-              document
-                .getElementById("auth-section")
-                ?.scrollIntoView({ behavior: "smooth" })
-            }
+            onClick={() => document.getElementById("auth-section")?.scrollIntoView({ behavior: "smooth" })}
           >
             Login
           </motion.button>
@@ -212,44 +188,15 @@ const LandingPage = () => {
       {/* About Section */}
       <section id="about" ref={aboutRef} className="py-20 px-8 bg-blue-950 z-10">
         <div className="container mx-auto max-w-4xl text-center">
-          <motion.h2
-            className="text-4xl font-bold text-white mb-4"
-            initial="hidden"
-            whileInView="visible"
-            variants={headingVariants}
-            viewport={{ once: true }}
-          >
+          <motion.h2 className="text-4xl font-bold text-white mb-4" initial="hidden" whileInView="visible" variants={headingVariants} viewport={{ once: true }}>
             Who We Are
           </motion.h2>
-          <motion.p
-            className="text-lg text-gray-300 mb-8"
-            initial="hidden"
-            whileInView="visible"
-            variants={textVariants}
-            viewport={{ once: true }}
-          >
-            We are the people behind <strong>BreachAlert.io</strong>. Our mission is to
-            empower you with awareness about your digital safety.
+          <motion.p className="text-lg text-gray-300 mb-8" initial="hidden" whileInView="visible" variants={textVariants} viewport={{ once: true }}>
+            We are the people behind <strong>BreachAlert.io</strong>. Our mission is to empower you with awareness about your digital safety.
           </motion.p>
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12"
-            initial="hidden"
-            whileInView="visible"
-            variants={containerVariants}
-            viewport={{ once: true }}
-          >
-            <Card
-              icon={<Users className="text-[#ffcc00] w-12 h-12" />}
-              title="Dedicated Team"
-              description="Our team is passionate about digital privacy and creating tools that are both effective and easy to use."
-              delay={0}
-            />
-            <Card
-              icon={<Lock className="text-[#ffcc00] w-12 h-12" />}
-              title="Privacy First"
-              description="We believe your data is your own. We never store your input or your results, ensuring complete anonymity."
-              delay={0.2}
-            />
+          <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12" initial="hidden" whileInView="visible" variants={containerVariants} viewport={{ once: true }}>
+            <Card icon={<Users className="text-yellow-400 w-12 h-12" />} title="Dedicated Team" description="Our team is passionate about digital privacy and creating tools that are both effective and easy to use." delay={0} />
+            <Card icon={<Lock className="text-yellow-400 w-12 h-12" />} title="Privacy First" description="We believe your data is your own. We never store your input or your results, ensuring complete anonymity." delay={0.2} />
           </motion.div>
         </div>
       </section>
@@ -262,61 +209,29 @@ const LandingPage = () => {
       {/* Contact Section */}
       <section id="contact" ref={contactRef} className="py-20 px-8 bg-blue-950 z-10">
         <div className="container mx-auto max-w-2xl text-center">
-          <motion.h2
-            className="text-4xl font-bold text-white mb-4"
-            initial="hidden"
-            whileInView="visible"
-            variants={headingVariants}
-            viewport={{ once: true }}
-          >
+          <motion.h2 className="text-4xl font-bold text-white mb-4" initial="hidden" whileInView="visible" variants={headingVariants} viewport={{ once: true }}>
             Get in Touch
           </motion.h2>
-          <motion.p
-            className="text-lg text-gray-300 mb-8"
-            initial="hidden"
-            whileInView="visible"
-            variants={textVariants}
-            viewport={{ once: true }}
-          >
+          <motion.p className="text-lg text-gray-300 mb-8" initial="hidden" whileInView="visible" variants={textVariants} viewport={{ once: true }}>
             Have questions or feedback? We'd love to hear from you.
           </motion.p>
           <form className="space-y-6">
-            <input
-              type="text"
-              placeholder="Your Name"
-              className="w-full px-6 py-4 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ffcc00] transition-all"
-            />
-            <input
-              type="email"
-              placeholder="Your Email"
-              className="w-full px-6 py-4 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ffcc00] transition-all"
-            />
-            <textarea
-              placeholder="Your Message"
-              rows="5"
-              className="w-full px-6 py-4 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ffcc00] transition-all"
-            ></textarea>
-            <button
-              type="submit"
-              className="w-full px-6 py-4 rounded-xl font-bold text-lg bg-[#ffcc00] text-black shadow-lg hover:scale-105 transition-transform"
-            >
+            <input type="text" placeholder="Your Name" className="w-full px-6 py-4 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all" />
+            <input type="email" placeholder="Your Email" className="w-full px-6 py-4 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all" />
+            <textarea placeholder="Your Message" rows="5" className="w-full px-6 py-4 rounded-xl bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"></textarea>
+            <button type="submit" className="w-full px-6 py-4 rounded-xl font-bold text-lg bg-yellow-400 text-black shadow-lg hover:scale-105 transition-transform">
               Send Message
             </button>
           </form>
           <div className="flex justify-center space-x-6 mt-8">
-            <a href="#" className="text-white hover:text-[#ffcc00] transition-colors">
-              <Linkedin size={28} />
-            </a>
-            <a href="#" className="text-white hover:text-[#ffcc00] transition-colors">
-              <Twitter size={28} />
-            </a>
-            <a href="#" className="text-white hover:text-[#ffcc00] transition-colors">
-              <Github size={28} />
-            </a>
+            <a href="#" className="text-white hover:text-yellow-400 transition-colors"><Linkedin size={28} /></a>
+            <a href="#" className="text-white hover:text-yellow-400 transition-colors"><Twitter size={28} /></a>
+            <a href="#" className="text-white hover:text-yellow-400 transition-colors"><Github size={28} /></a>
           </div>
         </div>
       </section>
 
+      {/* Custom Animation */}
       <style>{`
         @keyframes pulse-slow {
           0%, 100% { transform: scale(1); }
