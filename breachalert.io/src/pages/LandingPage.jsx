@@ -102,7 +102,7 @@ const handleLogin = async (e) => {
 
 
   return (
-    <div className="w-full max-w-md mx-auto bg-yellow-400 rounded-2xl shadow-lg p-8 space-y-6">
+    <div style={{fontFamily:"outfit"}} className="w-full max-w-md mx-auto bg-yellow-400 rounded-2xl shadow-lg p-8 space-y-6">
   <h2 className="text-3xl font-extrabold text-blue-900 text-center">{isSignup ? "Sign Up" : "Login"}</h2>
   <p className="text-center text-gray-700">{isSignup ? "Join us and protect your digital identity." : "Welcome back to your digital fortress."}</p>
 
@@ -159,7 +159,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#0f2257] text-white overflow-x-hidden font-outfit">
+    <div style={{fontFamily:"outfit"}} className="relative min-h-screen bg-[#0f2257] text-white overflow-x-hidden font-outfit">
       {/* Background */}
       <div className="fixed inset-0 bg-[#0f2257] -z-10" />
       <div className="fixed inset-0 bg-blue-900 opacity-30 animate-pulse-slow -z-10"></div>

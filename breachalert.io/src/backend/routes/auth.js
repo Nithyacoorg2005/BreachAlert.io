@@ -2,6 +2,8 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import fetch from "node-fetch";
+
 
 const router = express.Router();
 
@@ -50,6 +52,40 @@ router.post("/login", async (req, res) => {
   } catch (err) {
     console.error("🔥 Login error:", err);
     res.status(500).json({ msg: "Server error" });
+  }
+});
+router.post("/breach-check", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const response = await fetch("https://leakinsight-api.p.rapidapi.com/api/v1/breach-lookup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-RapidAPI-Key": process.env.LEAKINSIGHT_API_KEY,
+        "X-RapidAPI-Host": "leakinsight-api.p.rapidapi.com"
+      },
+      body: JSON.stringify({ email })
+    });
+
+    const text = await response.text(); // first get raw text
+    console.log("LeakInsight raw:", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      return res.status(500).json({ error: "Invalid JSON from LeakInsight", raw: text });
+    }
+
+    res.json(data);
+  } catch (err) {
+    console.error("BreachCheck error:", err);
+    res.status(500).json({ error: "Failed to check breach" });
   }
 });
 
