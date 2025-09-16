@@ -1,6 +1,9 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, useInView } from "framer-motion";
+// LandingPage.jsx (top)
+
+
 import {
   CheckCircle,
   Users,
@@ -45,6 +48,7 @@ const AuthSection = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5000";
 
 const handleSignup = async (e) => {
   e.preventDefault();
@@ -55,26 +59,42 @@ const handleSignup = async (e) => {
       body: JSON.stringify({ username, email, password }),
     });
 
-    // Try parsing response body
-    let data;
-    try {
-      data = await res.json();
-    } catch (err) {
-      console.error("❌ Could not parse JSON:", err);
-      throw new Error("Invalid JSON response from server");
-    }
+    const data = await res.json();
 
     if (res.ok) {
       alert(data.msg);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/main");
+      navigate("/main"); // ✅ redirect to main page
     } else {
-      // ✅ Show backend error message instead of generic
-      alert(data.msg || "Signup failed");
+      alert(data.msg || "Signup failed ❌");
     }
   } catch (err) {
     console.error("🔥 Signup error:", err);
-    alert(err.message || "Something went wrong. Check your server!");
+    alert("Signup failed, check server logs ❌");
+  }
+};
+const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(data.msg);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token); // ✅ save token for later use
+      navigate("/main");
+    } else {
+      alert(data.msg || "Login failed ❌");
+    }
+  } catch (err) {
+    console.error("🔥 Login error:", err);
+    alert("Login failed, check server logs ❌");
   }
 };
 
